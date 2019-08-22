@@ -19,3 +19,15 @@ uni2
 Q2<-ceiling(uni2[[1]])
 Q2
 ```
+At the period 22, his loan outstanding is slightly above the amount in his offset account, which means his loan can be paid in a period later, period 23, when he pays that difference, plus any difference in interest arised.
+
+The final payment can be calculated by calculating the loan outstanding in period 22,plus the interest from the loan, minus the interest from his offset account and the amount in his offset account.
+(\(L_t=L_0 - \sum_{t=1}^{n}(1+i)^{t-s}.R\)
+```{r}
+Lt<-600000*(1+i)^22-((pmt+100000*0.035)*(1-v^22)/i)*(1+i)^22
+```
+
+```{r}
+Lt*1.035-0.035*100000-100000
+```
+The difference mentioned above is the last payment for Scott to extinguish his loan. The amount is $11484.86
