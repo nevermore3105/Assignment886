@@ -8,6 +8,9 @@ output: html_document
 a)
 Calculate Theresa's commission following discounted cashflow approach, given that her commision schedule is subjected to the same pattern as Bill's repayments. We can use her annual commission times the annuity factor calculated in Q1 
 ```{r}
+i=0.035
+v=(1+i)^-1
+pmt=32622.8
 annuity=(1-v^30)/i
 Q3a<-1000*annuity
 Q3a
@@ -26,6 +29,7 @@ We assume that Theresa's commusion is valued at the same rate as the repayments.
 
 d)
 ```{r}
+i1<-Q3c
 f3d<-function(pmt1){pmt1*(1-(1+i1)^-30)/i1-600000}
 uni3d<-uniroot(f3d,interval=c(0,100000))
 Q3d<-uni3d$root[[1]]
