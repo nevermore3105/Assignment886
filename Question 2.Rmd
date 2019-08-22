@@ -12,6 +12,8 @@ The annual repayment from Scott is $32,622.8
   b)
   Given annual payment amount, now with an addition payment made from the offset account, we can calculate the number of year taken for Scott to extinguish his loan. 
 ```{r}
+i=0.035
+v=(1+i)^-1
 pmt=32622.8
 f2<-function(n){(pmt+100000*0.035)*(1-v^n)/i+100000*(1+i)^-n-600000}
 uni2<-uniroot(f2,interval=c(0,30))
