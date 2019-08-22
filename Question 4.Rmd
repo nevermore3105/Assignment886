@@ -1,0 +1,52 @@
+---
+title: "Question 4"
+author: "Minh Nhat Tran"
+date: "22/08/2019"
+output: html_document
+---
+
+Question 4
+```{r}
+A<-c("1965-05-16","1985-07-21","1994-06-22")
+B<-c("1922-03-01","1955-09-23","1993-07-21")
+C<-c("1942-09-21","1967-06-02","1996-04-29")
+
+lastbd<-function(x){
+  if(as.numeric((as.Date(x[3])-as.Date(x[1]))/365.25)-round(as.numeric((as.Date(x[3])-as.Date(x[1]))/365.25))>0)
+    {paste0(as.character(format(as.Date(x[3]),"%Y")),substring(x[1],5,10))
+    }else{
+    paste0(as.character(as.numeric(format(as.Date(x[3]),"%Y"))-1),substring(x[1],5,10))
+    }
+}
+```
+We create a formula to find the last birthday date for calculation purpose in part c
+
+a)
+We create the function for the difference between the death date and the birth date in year, then round the figure up.
+```{r}
+nextbdlifeyear<-function(x){ceiling(as.numeric((as.Date(x[3])-as.Date(x[1]))/365.25))}
+Q4a<-data.frame(Life=c("A","B","C"),NextbdLifeYear=c(nextbdlifeyear(A),nextbdlifeyear(B),nextbdlifeyear(C)))
+Q4a
+```
+b)
+We create the function for the difference between the birth date and the begining of the rate interval for calendar year rate calculation, January 01 in the year of death.
+```{r}
+lastbdcalyear<-function(x){floor(as.numeric((as.Date(paste0(as.character(format(as.Date(x[3]),"%Y")),"-01-01"))-as.Date(x[1]))/365.25))}
+
+Q4b<-data.frame(Life=c("A","B","C"),LastbdCalYear=c(lastbdcalyear(A),lastbdcalyear(B),lastbdcalyear(C)))
+Q4b
+```
+
+
+c)
+We create the function for the difference between the birth date and the birthday in the policy year of death.
+```{r}
+bdpolicyyear<-function(x){floor(as.numeric(as.Date(lastbd(x))-as.Date(x[1])+1)/365.25)}
+Q4c<-data.frame(Life=c("A","B","C"),BdPolicyYear=c(bdpolicyyear(A),bdpolicyyear(B),bdpolicyyear(C)))
+Q4c  
+```
+
+To sum up, the result for 3 parts.
+```{r}
+data.frame(Life=c("A","B","C"),Q4a$NextbdLifeYear,Q4b$LastbdCalYear,Q4c$BdPolicyYear)
+```
