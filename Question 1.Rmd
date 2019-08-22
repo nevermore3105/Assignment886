@@ -12,7 +12,7 @@ i=0.035
 v=(1+i)^(-1)
 annuity=(1-v^30)/i
 f1<-function(pmt){pmt*annuity-600000}
-uni1<-uniroot(f,interval=c(0,100000))
+uni1<-uniroot(f1,interval=c(0,100000))
 ```
 ```{r}
 Q1<-uni1$root[[1]]
