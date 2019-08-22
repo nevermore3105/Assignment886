@@ -1,0 +1,23 @@
+---
+title: "Assignment886-Question 1"
+author: "Minh Nhat Tran"
+date: "22/08/2019"
+output: html_document
+---
+
+Question 1
+(\(pmt = Loan~outstanding/\frac{1-v^n}{i}  \: \)
+```{r}
+i=0.035
+v=(1+i)^(-1)
+annuity=(1-v^30)/i
+f1<-function(pmt){pmt*annuity-600000}
+uni1<-uniroot(f,interval=c(0,100000))
+```
+```{r}
+Q1<-uni1$root[[1]]
+Q1
+```
+Given the interest rate of 3.5%, we are able to calculate the annuity factor of Bill's payments.
+Following the discounted cashflow approach, the annual repayment from Bill is $32,622.8
+
