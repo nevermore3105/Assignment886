@@ -81,7 +81,7 @@ qx
 ```
 
 **Calculate q_30 using MLE**
-
+\(L= (1-q_x)^6 q_x^2\) for x= 30
 ```{r}
 mle<-function(q){-sum(log(((1-q)^6)*q^2))}
 initialvalue=c(0.23)
@@ -89,3 +89,4 @@ nlm(mle,initialvalue)
 
 ```
 
+q_30=0.25
