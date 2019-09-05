@@ -125,4 +125,7 @@ scstat>1.64
 ```
   The test statistics is smaller than 1.64, so null hypothesis is retained.
   
-  To sum up, the graduated estimates pass all 6 tests which suggests the adherence to data is good. Null hypothesis is retained and Zx ’s are approximately iid N(0,1) and 
+  To sum up, the graduated estimates pass all 6 tests which suggests the adherence to data is good. Null hypothesis is retained and Zx ’s are approximately iid N(0,1) 
+  
+  
+  
