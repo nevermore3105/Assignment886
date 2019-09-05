@@ -1,0 +1,128 @@
+---
+title: "Assignment 2 886"
+author: "Minh Nhat Tran"
+date: "05/09/2019"
+output: pdf_document
+---
+**QUESTION 2**
+
+```{r}
+Age_group=c("40-44","45-49","50-54","55-59","60-64","65-69","70-74","75-79","80-84","85-89","90-94")
+Midpoint=c(42,47,52,57,62,67,72,77,82,87,92)
+Ex=c(15518,19428,21594,21890,19174,15775,11414,6993,3276,1096,201)
+ActD=c(65,144,219,378,465,557,685,644,471,217,67)
+ExpD=c(73.9,134.6,223.9,346.3,468.1,600.2,675.5,637.4,458.7,240.6,61.4)
+data.frame(Age_group,Ex,ActD,ExpD)
+```
+
+**Calculate Standard Deviation**
+  
+  \(z_x=\frac{D_x-E_x q_x}{\sqrt{E_xq_x(1-q_x)}}\)
+
+```{r}
+gradqx<-ExpD/Ex
+z<-(ActD-ExpD)/((ExpD*(1-gradqx))^0.5)
+z
+plot(Midpoint,gradqx,xlab="Age",main="Graphical graduation")
+lines(Midpoint,gradqx)
+```
+  We can notice the exponential increase in the mortality rate of old people.
+  We will check whether graduated estimates is close to data or not using 6 statistical tests of adhenrence.
+  
+  **Chi-square Test**
+  
+  Degree of freedom is the number of group minus 1.
+```{r}
+sum(z^2)>qchisq(0.95,11-1)
+```
+$\sum{z_x^2}<\chi_n^2(0.95)$
+  
+  Therefore, the distribution of \(z^2\) may look like chi-square; hence, null hypothesis that \(Z_x\)'s is standard normal is not rejected.
+
+  
+  **Standardized Deviation Test**
+  
+  \(\sum\frac{(A-E)^2}{E}\)
+  
+  Degree of freedom is the number of interval minus one.
+```{r}
+
+interval<-c("(–inf,–1)","(–1,0)","(0,1)","(1,inf)")
+E<-c(1.44,3.06,	3.06,	1.44)
+A<-c(3,2,5,1)
+z2<-sum(((A-E)^2)/E)
+data.frame(interval,E,A)
+z2>qchisq(0.95,4-1)
+```
+  Among the 11 z's, there are 6 fell within (-2/3,2/3) and the number of positive and negative deviations are roughly equal, which suggests a good graduation. 
+  
+  There are more numbers of deviation fell in the left tail than in the right tail, suggesting that graduated estimates should not be too low compared to the data, which we need to achieve. 
+The test statistic is smaller than $\chi_n^2(0.95)$, so null hypothesis is retained.
+ 
+ 
+  **Cummulative Deviation**
+```{r}
+z3<-sum(ActD-Ex*gradqx)/(sum((Ex*gradqx*(1-gradqx)))^0.5)
+z3
+z3>1.96
+```
+  The test statistic is not larger than 1.96; hence, null hypothesis is retained.
+
+  **Signs test**
+Let's m is the number of available \(z_x\)'s.
+j is number of positive \(z_x\)'s. In this case, m=11,j = 6
+```{r}
+m<-length(z)
+m
+j<-length(z[z>0])
+j
+i<-length(z[z<0])
+signtest<-function(k){((factorial(m)/(factorial(k)*factorial(m-k)))*(1/2)^m)-0.025}
+uni1<-uniroot(signtest,interval=c(0,5))
+k<-ceiling(uni1$root[[1]])
+k
+```
+Given k is smallest possible for $$\sum_{j=0}^{k}  \left[\begin{array}{rrr}m \\j\\\end{array}\right] (\frac{1}{2})^m\ge0.025$$
+```{r}
+signtest(k)
+j<k|j>m-k
+
+```
+We have it larger than k and smaller than m-k, adherence to data is good and null hypothesis is retained.
+
+  **Grouping of signs**
+
+  We have 4 distinct groups of positive $z_x$'s.
+  Given g is smallest possible for $$\sum_{j=1}^{g}  \frac{\left[\begin{array}{rrr}n_1-1 \\j-1\\\end{array}\right] \left[\begin{array}{rrr}n_2+1 \\j\\\end{array}\right]} {\left[\begin{array}{rrr}n_1+n_2 \\n_1\\\end{array}\right]}\ge0.05$$
+
+
+```{r}
+z/abs(z)
+n1<-4
+
+groupsigntest<-function(g){(factorial(j-1)/(factorial(g-1)*factorial(j-g))*(factorial(i+1)/(factorial(g)*factorial(i+1-g)))/(factorial(i+j)/(factorial(i)*factorial(j))))}
+```
+```{r}
+groupsigntest(1)>0.05
+groupsigntest(1)+groupsigntest(2)>0.05
+n1<2
+```
+  g is 2, then number of distinct groups of positive deviation is larger than g, so null hypothesis is retained.
+
+ **Serial Correlation test**
+```{r}
+z1<-c()
+z2<-c()
+for(i in 1:m-1){z1[i]<-z[i]}
+zbar1<-sum(z1)/(m-1)
+
+for(i in 1:m-1){z2[i]<-z[i+1]}
+zbar2<-sum(z2)/(m-1)
+
+scstat<-((m-1)^0.5)*(sum((z1-zbar1)*(z2-zbar2)))/((sum((z1-zbar1)^2))*(sum((z2-zbar2)^2)))^0.5
+scstat>1.64
+
+```
+  The test statistics is smaller than 1.64, so null hypothesis is retained.
+  
+  To sum up, the graduated estimates pass all 6 tests which suggests the adherence to data is good. Null hypothesis is retained and Zx ’s are approximately iid N(0,1) and 
