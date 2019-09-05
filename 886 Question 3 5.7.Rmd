@@ -1,0 +1,46 @@
+---
+title: "Untitled"
+author: "Minh Nhat Tran"
+date: "05/09/2019"
+output: pdf_document
+---
+**QUESTION 3**
+
+#5.7
+We want to graduate the mortality rate by mathematical formula: $\mu_x^o= B c^x$
+Our job is to estimate parameters B and c. 
+```{r}
+x<-c(70,71,72,73,74,75)
+Ecx<-c(1000,1005,1010,1008,1006,998)
+dx<-c(80,90,95,105,115,125)
+crude<-dx/Ecx
+crude
+```
+$\hat{\mu}=\frac{d_x}{E_x^c}$
+
+  In order to calculate MLE for B and c, we need to find the estimates for the initial values of the function nlm.
+  Taking the log from both side of the equation. We can see there is a linear relationship between the age and log of the mortality rate. Hence, we will find the intercept and coefficient of that relationship and set them as our initial values to start the simulation, using *lm* function. 
+  log($\hat{\mu}$)=log(B)+xlog(c)
+  
+```{r}
+a<-lm(log(crude)~x)
+estB<-exp(a$coefficient[1])
+estc<-exp(a$coefficient[2])
+```
+Take the exponential of the 2 parametters, we get the initial values. Then we can calculate the parameter using nlm function.
+```{r warning=FALSE}
+iv=c(estB,estc)
+iv
+f<-function(z){-sum(log((exp(-Ecx*z[1]*z[2]^x)*(Ecx*z[1]*z[2]^x)^dx)/factorial(dx)))}
+a1<-nlm(f,iv)
+a1
+B<-a1$estimate[[1]]
+c<-a1$estimate[[2]]
+B
+c
+grad<-B*c^x
+grad
+plot(x,crude,ylim=c(0.05,0.15))
+lines(x,grad,col="blue")  
+```
+
