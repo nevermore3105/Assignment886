@@ -1,0 +1,45 @@
+---
+title: "Untitled"
+author: "Minh Nhat Tran"
+date: "05/09/2019"
+output: pdf_document
+---
+#5.8
+We want to graduate the mortality rate by mathematical formula: $ln(q_x^o (1-q_x^o))= a +b x $
+Our job is to estimate parameters a and b. 
+```{r}
+
+x<-c(30,31,32,33,34,35,36,37,38,39,40,41,42,43,44,45,46,47,48,49)
+Ex<-c(70000,66672,68375,65420,61779,66091,68514,69560,65000,66279,67300,65368,65391,62917,66537,62302,62145,63856,61097,61110)
+dx<-c(39,43,34,31,23,50,48,43,48,47,62,63,84,86,120,121,122,162,151,184)
+crude2<-dx/Ex
+log_crude<-log(crude2*(1-crude2))
+```
+Again we need to find the estimated initial values. $ln(q_x^o (1-q_x^o))= a +b x $
+  We will use the intercept and coefficient from the relationship between x and $ln(q_x^o (1-q_x^o))$
+```{r}
+LM2<-lm(log_crude~x)
+
+esta<-(LM2$coefficient[1])
+estb<-(LM2$coefficient[2])
+
+
+iv2=c(esta,estb)
+
+f2<-function(z){sum((Ex*(log_crude-z[1]-z[2]*x)^2))}
+a2<-nlm(f2,iv2)
+a2
+a<-a2$estimate[[1]]
+b<-a2$estimate[[2]]
+```
+
+```{r}
+a
+b
+grad2<-1-1/(exp(a+b*x)+1)
+grad2
+plot(x,crude2,ylim=c(0.0,0.004),xlim=c(30,50))
+lines(x,grad2,col="blue")  
+
+```
+
