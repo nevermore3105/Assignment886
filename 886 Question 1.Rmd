@@ -1,0 +1,91 @@
+---
+title: "Untitled"
+author: "Minh Nhat Tran"
+date: "05/09/2019"
+output: pdf_document
+---
+
+**QUESTION 1**
+
+```{r}
+Life<-c("A","C","D","E","F","G","H","I","J")
+DoB<-as.Date(c("1964-03-17","1964-08-12","1964-10-27","1965-01-04","1965-04-18","1965-05-20","1965-07-04","1965-09-16","1965-12-11"))
+PA<-as.Date(c("1992-06-20","1992-12-18","1993-01-04","1993-04-28","1993-06-16","1993-10-29","1994-02-16","1994-08-22","1995-03-06"))
+datedeath<-as.Date(c("1998-06-20","1998-12-18","1998-01-04","1996-08-29","1998-06-16","1996-04-21","1998-02-16","1998-08-22","1997-02-17"))
+datewithdrawal<-as.Date(c("1998-06-20","1995-06-18","1998-01-04","1998-04-28","1995-12-12","1998-10-29","1998-02-16","1997-02-22","1998-03-06"))
+data.frame(Life,DoB,PA,Death=datedeath,Withdr=datewithdrawal)
+```
+  Life B died on 12/06/1993, while the observation for life B started from the anniversary in 1993, which is 06/08/1993, which is after life B die. Therefore, life B is taken out of the observation. 
+  
+  For other lives who did not die during the period, we just put their anniversaries in 1998 as the death date or withdrawal date, just a mean of exiting the observation. (for easier calculation purpose)
+
+
+  We want to find the birthday and the policy anniversary in the year when the lives are 30 years old according to real age. 
+```{r}
+n=30
+tempDoB<-DoB+365.25*n
+tempPA<-as.Date(paste0(as.character(format((DoB+365.25*n),"%Y")),substring(PA,5,10)))
+tempDoB
+tempPA
+```
+  If that birthday is the closest birthday to the policy anniversary in the same year, then according to the assumption, the insuring age of the lives are 30 starting on the anniversary. If the policy anniversary is closer to a birthday in another year, then the date and year when lives turn 30 is adjusted accordingly. 
+
+```{r}
+x<-c()
+for(i in 1:9){if(abs(as.numeric(tempPA[i]-tempDoB[i])/365.25)<0.5){x[i]=as.character(tempPA[i])}else{x[i]=(paste0(as.character(format((DoB[i]+365.25*31),"%Y")),substring(PA[i],5,10)))}}
+xstar<-as.Date(x)
+data.frame(Life,Start_of_observation_30yo=xstar)
+```
+We calculate the valuation year of birth which is the date of the observation at age 30 that we calculated above minus 30. Hence, we can calculate the age when lives withdraw from the policy according the our assumptions.
+
+```{r}
+valuationyear<-as.numeric(format(xstar,format="%Y"))-30
+withdrawalage<-as.numeric(format(datewithdrawal,format="%Y"))-valuationyear
+withdrawalage
+```
+If the withdrawal age less or equal to 30, which means lives will withdraw when he/she turns 30 or less. Hence, his/her exposure will be zero for observation of age 30. 
+```{r}
+WithdrawalB<-c()
+DeathB<-c()
+for(i in 1:9){if(withdrawalage[i]<=30){WithdrawalB[i]=0}
+  else{WithdrawalB[i]=1}}
+
+DeathB<-numeric()
+for(i in 1:9){if(as.numeric((datedeath[i]-xstar[i])/365.25)>=1){DeathB[i]=1}
+  else{DeathB[i]=floor(as.numeric((datedeath[i]-xstar[i])*10/365.25))/10}}
+ 
+DateB<-pmin(DeathB,WithdrawalB)
+```
+We then can measure the Date B of observation for each life, which is equal to 0 if he/she died before, or withdraws from the policy when he/she turns 30. 
+  Date B will equal 1 if lives survive through age 30. If he/she dies within the year then date B would equal that proportion of year that he lived. 
+  (To calculate q, we just need the innitial exposure but I want to calculate date B for illustration or other exercise purpose.)
+
+```{r}
+dummy<-c()
+for(i in 1:9){
+  if(datedeath[i]<xstar[i]+365.25){dummy[i]=1}else{dummy[i]=0}}
+dummy
+```
+I create a function for the death status of lives, which equals to 1 if lives die within the year age 30, 0 if they did not die.
+```{r}
+data.frame(Life,DateA=rep(0,9),DateB,Di=dummy)
+```
+Summary of the illustration, we can calculate initial exposure and count the number of death.
+Then, calculate \(\hat{q_x}=\frac{d_x}{E_x}\)
+
+```{r}
+Expo<-sum(ceiling(DateB))
+
+qx<-sum(dummy)/sum(Expo)
+qx
+```
+
+**Calculate q_30 using MLE**
+
+```{r}
+mle<-function(q){-sum(log(((1-q)^6)*q^2))}
+initialvalue=c(0.23)
+nlm(mle,initialvalue)
+
+```
+
