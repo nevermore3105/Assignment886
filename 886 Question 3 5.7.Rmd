@@ -13,8 +13,8 @@ Our job is to estimate parameters B and c.
 x<-c(70,71,72,73,74,75)
 Ecx<-c(1000,1005,1010,1008,1006,998)
 dx<-c(80,90,95,105,115,125)
-crude<-dx/Ecx
-crude
+crude1<-dx/Ecx
+crude1
 ```
 $\hat{\mu}=\frac{d_x}{E_x^c}$
 
@@ -23,24 +23,24 @@ $\hat{\mu}=\frac{d_x}{E_x^c}$
   log($\hat{\mu}$)=log(B)+xlog(c)
   
 ```{r}
-a<-lm(log(crude)~x)
-estB<-exp(a$coefficient[1])
-estc<-exp(a$coefficient[2])
+LM1<-lm(log(crude1)~x)
+estB<-exp(LM1$coefficient[1])
+estc<-exp(LM1$coefficient[2])
 ```
 Take the exponential of the 2 parametters, we get the initial values. Then we can calculate the parameter using nlm function.
 ```{r warning=FALSE}
-iv=c(estB,estc)
-iv
-f<-function(z){-sum(log((exp(-Ecx*z[1]*z[2]^x)*(Ecx*z[1]*z[2]^x)^dx)/factorial(dx)))}
-a1<-nlm(f,iv)
+iv1=c(estB,estc)
+iv1
+f1<-function(z){-sum(log((exp(-Ecx*z[1]*z[2]^x)*(Ecx*z[1]*z[2]^x)^dx)/factorial(dx)))}
+a1<-nlm(f1,iv1)
 a1
 B<-a1$estimate[[1]]
 c<-a1$estimate[[2]]
 B
 c
-grad<-B*c^x
-grad
-plot(x,crude,ylim=c(0.05,0.15))
-lines(x,grad,col="blue")  
+grad1<-B*c^x
+grad1
+plot(x,crude1,ylim=c(0.05,0.15))
+lines(x,grad1,col="blue")  
 ```
 
