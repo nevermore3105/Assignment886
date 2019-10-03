@@ -1,0 +1,136 @@
+---
+title: "Assignment 3 ex3"
+author: "Minh Nhat Tran"
+date: "03/10/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Exercise 3
+
+### Input
+```{r}
+prem<-5000
+premfeerate<-c(0.45,rep(0.01,9))
+buysellmarginrate<-0.005
+unitfundrate<-0.1
+nonunitfundrate<-0.08
+assetfee<-0.003
+
+
+```
+
+
+### Mortality Rates
+```{r}
+year<-c(1:10)
+x<-c()
+x<-year+29
+x
+qd<-c(0.00043,0.00042,0.00041,0.00040,0.00041,0.00042,0.00043,0.00045,0.00049,0.00053)
+qw<-c(0.25,0.2,0.175,rep(0.15,6),1)
+
+aqd<-qd*(1-0.5*qw)
+aqw<-qw*(1-0.5*qd)
+al<-c()
+add<-c()
+adw<-c()
+al[1]<-100000
+
+for(i in 1:10){
+  add[i]=aqd[i]*al[i]
+  adw[i]=aqw[i]*al[i]
+  al[i+1]=al[i]-add[i]-adw[i]
+}
+table_d<-cbind(x,qd,qw,aqd,aqw,al[1:10],add,adw)
+colnames(table_d)<-c("Age","qd","qw","(aq)d","(aq)w","(al)","(ad)d","(ad)w")
+table_d
+```
+
+### Unit fund
+```{r}
+#adjusted from ex2
+suminsured<-20000
+insurancecharge<-1.2*qd*suminsured
+
+investedprem.BoY<-rep(prem,10)*(1-premfeerate)*(1-buysellmarginrate)-insurancecharge
+
+valueofunits.EoY<-c()
+valueofunits.EoY[1]<-investedprem.BoY[1]*(1+unitfundrate)*(1-assetfee)
+
+for(i in 2:10){valueofunits.EoY[i]=(investedprem.BoY[i]+valueofunits.EoY[i-1])*(1+unitfundrate)*(1-assetfee)}
+```
+
+### Expected amounts per initial policy
+```{r}
+e_investedprem.BoY<-c()
+e_investedprem.BoY[1:10]<-investedprem.BoY*al[1:10]/al[1]
+e_valueofunits.EoY<-c()
+e_valueofunits.EoY[1:10]<-valueofunits.EoY*al[2:11]/al[1]
+e_valueofunits.EoY
+e_interest<-c()
+e_interest[1]<-e_investedprem.BoY[1]*unitfundrate
+e_interest[2:10]<-(e_investedprem.BoY[2:10]+e_valueofunits.EoY[1:9])*unitfundrate
+changeinpv<-c()
+changeinpv[1]<-e_valueofunits.EoY[1]
+changeinpv[2:10]<-e_valueofunits.EoY[2:10]-e_valueofunits.EoY[1:9]
+changeinpv
+
+
+transfer<-e_investedprem.BoY[1:10]+e_interest-changeinpv
+
+tableunitfund<-cbind(year,e_investedprem.BoY[1:10],e_interest,e_valueofunits.EoY,transfer)
+colnames(tableunitfund)<-c("Year","Inv.Premium BOY","Interest EOY","Value.Unit EOY","Transfer EOY")
+tableunitfund
+```
+
+
+
+### Non-Unit Fund
+```{r}
+premfee.BoY<-prem*premfeerate
+
+buysellmargin.BoY<-prem*(1-premfeerate)*buysellmarginrate
+
+#### ADJUSTED EXPENSE
+expense.BoY<-c()
+expense.BoY[1]<-0.45*prem+75
+expense.BoY[2:10]<-75*(1+0.25)^(year[2:10]-1)
+
+deathbft.EoY<-valueofunits.EoY+suminsured
+surrbft.EoY<-valueofunits.EoY
+
+e_premfee.BoY<-premfee.BoY*al[1:10]/al[1]
+
+e_buysellmargin.BoY<-buysellmargin.BoY*al[1:10]/al[1]
+
+e_expense.BoY<-expense.BoY*al[1:10]/al[1]
+
+e_insurancecharge<-insurancecharge*al[1:10]/al[1]
+
+e_nonunitfundinterest.EoY<-(e_premfee.BoY+e_buysellmargin.BoY+e_insurancecharge-e_expense.BoY)*nonunitfundrate
+
+e_deathbft.EoY<-deathbft.EoY*add/al[1]
+e_surrbft.EoY<-surrbft.EoY*adw/al[1]
+
+nonunitfundtransfer<-e_premfee.BoY+e_buysellmargin.BoY+e_insurancecharge-e_expense.BoY+e_nonunitfundinterest.EoY+transfer-e_deathbft.EoY-e_surrbft.EoY
+
+tablenonunitfund<-cbind(year,e_premfee.BoY,e_buysellmargin.BoY,e_insurancecharge,e_expense.BoY,e_nonunitfundinterest.EoY,transfer,e_deathbft.EoY,e_surrbft.EoY,nonunitfundtransfer)
+colnames(tablenonunitfund)<-c("Year","Prem-based.fee BOY","B-S Margin BOY","Pol.Charge","Expenses BOY","Interest EOY","Transfer UnitF EOY","Death Bft EOY","Surr Bft EOY","Transfer")
+tablenonunitfund
+```
+
+# Answer_Yield on transfers
+```{r}
+
+npvprofit<-function(i,a){sum(a*(1+i)^-(year))}
+
+nonunitfundtransfer
+npvprofit(0.125,nonunitfundtransfer)
+```
+
+```{r}
+npvprofit(0.125,nonunitfundtransfer)/prem               #profit margin
+
+```
