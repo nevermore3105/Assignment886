@@ -1,0 +1,114 @@
+---
+title: "Assignment 3 ex1"
+author: "sachi"
+date: "28/07/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Exercise 1
+### Input
+```{r}
+rm(list=ls())
+i<-round(1.06/1.0192308-1,2)
+price<-40250
+year<-c()
+year<-c(1:3)
+x<-c()
+x[1:3]<-year+55
+x
+```
+### Decrement rates
+```{r}
+qx<-c()
+qx<-c(0.001046,0.001199,0.001375)
+
+al<-c()
+al[1]<-100000
+al[2]<-al[1]*(1-qx[1])
+al[3]<-al[2]*(1-qx[2])
+ad<-al*qx
+
+A<-c(0.889132,0.924607,1)
+a<-(1-A)/(0.04/1.04)-1
+a[3]<-0
+a
+
+table_d<-cbind(x,qx,al,ad,a)
+colnames(table_d)<-c("Age","qx","al","ad","policy value basis")
+table_d
+```
+
+### Possible CFs
+```{r}
+
+prem.BoY<-c(price,0,0)
+acqexp.BoY<-c()
+acqexp.BoY[1]<-100+0.015*price
+acqexp.BoY[2:3]<-c(0,0)
+annuityexp.EoY<-c(10*1.05^(year-1))
+
+annuitybft.EoY<-c(15000*1.0192308^(year-1))
+policyvalue.EoY<-a*annuitybft.EoY
+
+table_cf<-cbind(year,x,prem.BoY,acqexp.BoY,annuityexp.EoY,annuitybft.EoY,policyvalue.EoY)
+colnames(table_cf)<-c("Year","Age","Premium BOY","Acq.Exp BOY","Annu.Exp EoY","Annuity Bft EOY","Policy Value EoY")
+table_cf
+```
+
+
+### Expected CFs
+```{r}
+e_prem.BoY<-prem.BoY*al/al[1]
+e_prem.BoY
+e_acqexp.BoY<-acqexp.BoY*al/al[1]
+e_annuityexp.EoY<-annuityexp.EoY*(al-ad)/al[1]
+e_annuitybft.EoY<-annuitybft.EoY*(al-ad)/al[1]
+e_policyvalue.EoY<-policyvalue.EoY*(al-ad)/al[1]
+e_int.EoY<-c()
+e_int.EoY[1]<-(e_prem.BoY[1]-e_acqexp.BoY[1]-e_annuityexp.EoY[1])*0.08
+e_int.EoY[2:3]<-(e_prem.BoY[2:3]-e_acqexp.BoY[2:3]-e_annuityexp.EoY[2:3]+e_policyvalue.EoY[1:2])*0.08
+e_int.EoY
+e_changeinpv.EoY<-c()
+e_changeinpv.EoY[1]<-e_policyvalue.EoY[1]
+e_changeinpv.EoY[2:3]<-e_policyvalue.EoY[2:3]-e_policyvalue.EoY[1:2]
+transfer<-e_prem.BoY-e_acqexp.BoY-e_annuityexp.EoY-e_annuitybft.EoY+e_int.EoY-e_changeinpv.EoY
+
+table_ecf<-cbind(e_prem.BoY,e_acqexp.BoY,e_annuityexp.EoY,e_annuitybft.EoY,e_int.EoY,e_policyvalue.EoY,transfer)
+table_ecf
+```
+
+
+# Part a(i)_Profit Signature
+```{r}
+transfer
+```
+
+# Part a(ii)_Expected NPV of Profit per policy issued
+```{r}
+valuation_i=0.12
+npvprofit<-function(i){sum(transfer*(1+i)^-(year))}
+npvprofit(valuation_i)
+```
+### Profit Margin
+```{r}
+profitmargin<-npvprofit(valuation_i)/price
+profitmargin
+```
+
+# Part b_IRR
+```{r}
+uniroot<-uniroot(npvprofit,c(0.01,1))
+uniroot$root[[1]]
+```
+
+  Internal Rate of Return is approximately 50% p.a., which is very high, while the profit margin is quite low, suggests that the high IRR may be due to the size of the transfers are very close to each other which may resulted from they being relatively small compared to the price of the asset.
+ 
+  We can try to change the value of transfer by even a small number would make the IRR change drammatically. 
+    
+    
+  Another reason is that the number of the annuity payments is quite small. If the payments are splited into smaller payments in a longer duration then the IRR may reflex better. 
+ 
+ 
+ 
