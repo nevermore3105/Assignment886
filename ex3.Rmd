@@ -121,16 +121,27 @@ colnames(tablenonunitfund)<-c("Year","Prem-based.fee BOY","B-S Margin BOY","Pol.
 tablenonunitfund
 ```
 
-# Answer_Yield on transfers
+
+# Yield on transfers
+## For Question 2a
+The IRR in Question 2 a is calculated from Question 2, which is 0.4738267
 ```{r}
-
-npvprofit<-function(i,a){sum(a*(1+i)^-(year))}
-
 nonunitfundtransfer
-npvprofit(0.125,nonunitfundtransfer)
+
+npvprofit<-function(i){sum(nonunitfundtransfer*(1+i)^-(year))}
+
+npvprofit(0.125)
 ```
 
 ```{r}
-npvprofit(0.125,nonunitfundtransfer)/prem               #profit margin
-
+npvprofit(nonunitfundtransfer)/prem               #profit margin
 ```
+## For Question 3
+```{r}
+uniroot<-uniroot(npvprofit,c(-3,-0.9))
+uniroot
+```
+```{r}
+uniroot$root[[1]]
+```
+The IRR for Question 3 is -1.924069
