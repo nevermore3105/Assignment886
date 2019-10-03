@@ -127,9 +127,16 @@ nonunitfundtransfer
 ```
 ### Expected value of transfer
 ```{r}
-npvprofit<-function(i,a){sum(a*(1+i)^-(year))}
-npvprofit(0.125,nonunitfundtransfer)
-npvprofit(0.125,nonunitfundtransfer)/prem                #profit margin
+npvprofit<-function(a){sum(a*(1+0.125)^-(year))}
+npvprofit(nonunitfundtransfer)
+npvprofit(nonunitfundtransfer)/prem    #profit margin
+npvprofit1<-function(i){sum(nonunitfundtransfer*(1+i)^-(year))}
+```
+### IRR
+```{r}
+uniroot<-uniroot(npvprofit1,c(0,1))
+uniroot
+uniroot$root[[1]]
 ```
  
 
@@ -180,8 +187,8 @@ tablenonunitfund
 
 # Part c_EPV of transfer after zeroising
 ```{r}
-npvprofit(0.125,zerononunitfundtransfer)
-npvprofit(0.125,zerononunitfundtransfer)-npvprofit(0.125,nonunitfundtransfer)
+npvprofit(zerononunitfundtransfer)
+npvprofit(zerononunitfundtransfer)-npvprofit(nonunitfundtransfer)
 ```
  The expected present value of transfers decreases due to the difference between the interest rate and the risk discount rate.
   
