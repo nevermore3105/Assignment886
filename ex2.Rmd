@@ -1,0 +1,191 @@
+---
+title: "Assignment 2 ex2"
+author: "Minh Nhat Tran"
+date: "03/10/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+# Exercise 2
+### Input
+
+```{r}
+rm(list=ls())
+prem<-5000
+premfeerate<-c(0.45,rep(0.01,9))
+buysellmarginrate<-0.005
+unitfundrate<-0.1
+nonunitfundrate<-0.08
+assetfee<-0.003
+
+```
+
+
+### Mortality Rates
+```{r}
+year<-c(1:10)
+x<-c()
+x<-year+29
+x
+qd<-c(0.00043,0.00042,0.00041,0.00040,0.00041,0.00042,0.00043,0.00045,0.00049,0.00053)
+qw<-c(0.25,0.2,0.175,rep(0.15,6),1)
+
+aqd<-qd*(1-0.5*qw)
+aqw<-qw*(1-0.5*qd)
+al<-c()
+add<-c()
+adw<-c()
+al[1]<-100000
+
+for(i in 1:10){
+  add[i]=aqd[i]*al[i]
+  adw[i]=aqw[i]*al[i]
+  al[i+1]=al[i]-add[i]-adw[i]
+  }
+```
+
+
+
+### Unit fund
+#### Premium
+```{r}
+investedprem.BoY<-rep(prem,10)*(1-premfeerate)*(1-buysellmarginrate)
+```
+
+
+#### Value of Units
+```{r}
+valueofunits.EoY<-c()
+valueofunits.EoY[1]<-investedprem.BoY[1]*(1+unitfundrate)*(1-assetfee)
+
+for(i in 2:10){valueofunits.EoY[i]=(investedprem.BoY[i]+valueofunits.EoY[i-1])*(1+unitfundrate)*(1-assetfee)
+
+}
+valueofunits.EoY[1:10]
+```
+
+#### Expected amounts per initial policy
+```{r}
+e_investedprem.BoY<-c()
+e_investedprem.BoY[1:10]<-investedprem.BoY[1:10]*al[1:10]/al[1]
+
+e_valueofunits.EoY<-c()
+e_valueofunits.EoY[1:10]<-valueofunits.EoY*al[2:11]/al[1]
+
+e_interest<-c()
+e_interest[1]<-e_investedprem.BoY[1]*unitfundrate
+e_interest[2:10]<-(e_investedprem.BoY[2:10]+e_valueofunits.EoY[1:9])*unitfundrate
+changeinpv<-c()
+changeinpv[1]<-e_valueofunits.EoY[1]
+changeinpv[2:10]<-e_valueofunits.EoY[2:10]-e_valueofunits.EoY[1:9]
+changeinpv
+
+
+transfer<-e_investedprem.BoY[1:10]+e_interest-changeinpv
+
+tableunitfund<-cbind(year,e_investedprem.BoY[1:10],e_interest,e_valueofunits.EoY,transfer)
+colnames(tableunitfund)<-c("Year","Inv.Premium BOY","Interest EOY","Value.Unit EOY","Transfer EOY")
+tableunitfund
+```
+
+### Non-Unit Fund
+```{r}
+
+premfee.BoY<-prem*premfeerate
+
+buysellmargin.BoY<-prem*(1-premfeerate)*buysellmarginrate
+
+expense.BoY<-c()
+expense.BoY[1]<-0.45*prem+58
+expense.BoY[2:10]<-58*(1+0.2)^(year[2:10]-1)
+
+bft.EoY<-valueofunits.EoY
+
+e_premfee.BoY<-premfee.BoY*al[1:10]/al[1]
+
+e_buysellmargin.BoY<-buysellmargin.BoY*al[1:10]/al[1]
+
+e_expense.BoY<-expense.BoY*al[1:10]/al[1]
+
+e_nonunitfundinterest.EoY<-(e_premfee.BoY+e_buysellmargin.BoY-e_expense.BoY)*nonunitfundrate
+
+deathbft.EoY<-bft.EoY*add/al[1]
+surrbft.EoY<-bft.EoY*adw/al[1]
+
+nonunitfundtransfer<-e_premfee.BoY+e_buysellmargin.BoY-e_expense.BoY+e_nonunitfundinterest.EoY+transfer-deathbft.EoY-surrbft.EoY
+
+tablenonunitfund<-cbind(year,e_premfee.BoY,e_buysellmargin.BoY,e_expense.BoY,e_nonunitfundinterest.EoY,transfer,deathbft.EoY,surrbft.EoY,nonunitfundtransfer)
+colnames(tablenonunitfund)<-c("Year","Prem-based fees BOY","B-S Margin BOY","Expenses BOY","Interest EOY","Transfer UnitFund EOY","Death Bft EOY","Surr Bft EOY","Transfer")
+tablenonunitfund
+```
+
+# Part a_ Profit Signature and EPV of transfer
+### Profit signature
+```{r}
+nonunitfundtransfer
+```
+### Expected value of transfer
+```{r}
+npvprofit<-function(i,a){sum(a*(1+i)^-(year))}
+npvprofit(0.125,nonunitfundtransfer)
+npvprofit(0.125,nonunitfundtransfer)/prem                #profit margin
+```
+ 
+
+
+# Part b_Zeroising balance
+
+```{r}
+nonunitfundtransfer[10]
+policyvalue<-valueofunits.EoY
+
+
+
+pv<-function(n){e_valueofunits.EoY[9]<-n*al[10]/al[1]
+e_interest[10]<-(e_investedprem.BoY[10]+e_valueofunits.EoY[9])*unitfundrate
+changeinpv[9:10]<-e_valueofunits.EoY[9:10]-e_valueofunits.EoY[8:9]
+transfer[9:10]<-e_investedprem.BoY[9:10]+e_interest[9:10]-changeinpv[9:10]
+nonunitfundtransfer[9:10]<-e_premfee.BoY[9:10]+e_buysellmargin.BoY[9:10]-e_expense.BoY[9:10]+e_nonunitfundinterest.EoY[9:10]+transfer[9:10]-deathbft.EoY[9:10]-surrbft.EoY[9:10]
+nonunitfundtransfer[10]}
+
+uniroot<-uniroot(pv,c(1,100000))
+uniroot
+
+policyvalue[9]<-uniroot$root[[1]]
+policyvalue[9]-valueofunits.EoY[9]
+```
+
+### Changes resulted from the change in policy value in Y9
+```{r}
+
+e_valueofunits.EoY[1:10]<-policyvalue*al[2:11]/al[1]
+e_interest[2:10]<-(e_investedprem.BoY[2:10]+e_valueofunits.EoY[1:9])*unitfundrate
+changeinpv[2:10]<-e_valueofunits.EoY[2:10]-e_valueofunits.EoY[1:9]
+transfer<-e_investedprem.BoY[1:10]+e_interest-changeinpv
+tableunitfund<-cbind(year,e_investedprem.BoY[1:10],e_interest,e_valueofunits.EoY,transfer)
+colnames(tableunitfund)<-c("Year","Inv.Premium BOY","Interest EOY","Value.Unit EOY","Transfer EOY")
+tableunitfund
+zerononunitfundtransfer<-e_premfee.BoY+e_buysellmargin.BoY-e_expense.BoY+e_nonunitfundinterest.EoY+transfer-deathbft.EoY-surrbft.EoY
+
+tablenonunitfund<-cbind(year,e_premfee.BoY,e_buysellmargin.BoY,e_expense.BoY,e_nonunitfundinterest.EoY,transfer,deathbft.EoY,surrbft.EoY,zerononunitfundtransfer)
+colnames(tablenonunitfund)<-c("Year","Prem-based fees BOY","B-S Margin BOY","Expenses BOY","Interest EOY","Transfer UnitFund EOY","Death Bft EOY","Surr Bft EOY","Transfer")
+tablenonunitfund
+```
+ Check zero transfer in year 10
+```{r}
+ floor(zerononunitfundtransfer[10])
+
+```
+
+# Part c_EPV of transfer after zeroising
+```{r}
+npvprofit(0.125,zerononunitfundtransfer)
+npvprofit(0.125,zerononunitfundtransfer)-npvprofit(0.125,nonunitfundtransfer)
+```
+ The expected present value of transfers decreases due to the difference between the interest rate and the risk discount rate.
+  
+ When we want the transfer in year 10 to be 0 and increase the policy value in year 9, the transfer in year 9 will decrease, meaning higher reserves defer the emergence of profit. While the holding of more reserve will result in an increase in interest earned of 10% in the unit fund, the valuation basis for interest rate is higher, leading to a decrease in net present value.
+
+
+
